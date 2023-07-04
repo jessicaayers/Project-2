@@ -53,11 +53,11 @@ head(onpdata_world$data_channel_is_world)
 
 ```{r}
 #create training and test data set
+library(caret)
 set.seed(111)
-train <- sample(1:nrow(onpdata_world), size = nrow(onpdata_world)*0.70) 
-test <- dplyr::setdiff(1:nrow(onpdata_world), train)
-worldTrain <- onpdata_world[train, ] 
-worldTest <- onpdata_world[test, ]
+trainIndex <- createDataPartition(onpdata_world$shares, p = 0.7, list = FALSE) 
+worldTrain <- onpdata_world[trainIndex, ]
+worldTest <- onpdata_world[-trainIndex, ]
 ```
 
 *You should produce some basic (but meaningful) summary statistics and plots about the training data you are working with (especially as it relates to your response).*

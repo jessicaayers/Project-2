@@ -31,21 +31,26 @@ onpdata <- read_csv("../OnlineNewsPopularity/OnlineNewsPopularity.csv")
 attributes(onpdata)$names
 ```
 
-    ##  [1] "url"                           "timedelta"                     "n_tokens_title"                "n_tokens_content"             
-    ##  [5] "n_unique_tokens"               "n_non_stop_words"              "n_non_stop_unique_tokens"      "num_hrefs"                    
-    ##  [9] "num_self_hrefs"                "num_imgs"                      "num_videos"                    "average_token_length"         
-    ## [13] "num_keywords"                  "data_channel_is_lifestyle"     "data_channel_is_entertainment" "data_channel_is_bus"          
-    ## [17] "data_channel_is_socmed"        "data_channel_is_tech"          "data_channel_is_world"         "kw_min_min"                   
-    ## [21] "kw_max_min"                    "kw_avg_min"                    "kw_min_max"                    "kw_max_max"                   
-    ## [25] "kw_avg_max"                    "kw_min_avg"                    "kw_max_avg"                    "kw_avg_avg"                   
-    ## [29] "self_reference_min_shares"     "self_reference_max_shares"     "self_reference_avg_sharess"    "weekday_is_monday"            
-    ## [33] "weekday_is_tuesday"            "weekday_is_wednesday"          "weekday_is_thursday"           "weekday_is_friday"            
-    ## [37] "weekday_is_saturday"           "weekday_is_sunday"             "is_weekend"                    "LDA_00"                       
-    ## [41] "LDA_01"                        "LDA_02"                        "LDA_03"                        "LDA_04"                       
-    ## [45] "global_subjectivity"           "global_sentiment_polarity"     "global_rate_positive_words"    "global_rate_negative_words"   
-    ## [49] "rate_positive_words"           "rate_negative_words"           "avg_positive_polarity"         "min_positive_polarity"        
-    ## [53] "max_positive_polarity"         "avg_negative_polarity"         "min_negative_polarity"         "max_negative_polarity"        
-    ## [57] "title_subjectivity"            "title_sentiment_polarity"      "abs_title_subjectivity"        "abs_title_sentiment_polarity" 
+    ##  [1] "url"                           "timedelta"                     "n_tokens_title"               
+    ##  [4] "n_tokens_content"              "n_unique_tokens"               "n_non_stop_words"             
+    ##  [7] "n_non_stop_unique_tokens"      "num_hrefs"                     "num_self_hrefs"               
+    ## [10] "num_imgs"                      "num_videos"                    "average_token_length"         
+    ## [13] "num_keywords"                  "data_channel_is_lifestyle"     "data_channel_is_entertainment"
+    ## [16] "data_channel_is_bus"           "data_channel_is_socmed"        "data_channel_is_tech"         
+    ## [19] "data_channel_is_world"         "kw_min_min"                    "kw_max_min"                   
+    ## [22] "kw_avg_min"                    "kw_min_max"                    "kw_max_max"                   
+    ## [25] "kw_avg_max"                    "kw_min_avg"                    "kw_max_avg"                   
+    ## [28] "kw_avg_avg"                    "self_reference_min_shares"     "self_reference_max_shares"    
+    ## [31] "self_reference_avg_sharess"    "weekday_is_monday"             "weekday_is_tuesday"           
+    ## [34] "weekday_is_wednesday"          "weekday_is_thursday"           "weekday_is_friday"            
+    ## [37] "weekday_is_saturday"           "weekday_is_sunday"             "is_weekend"                   
+    ## [40] "LDA_00"                        "LDA_01"                        "LDA_02"                       
+    ## [43] "LDA_03"                        "LDA_04"                        "global_subjectivity"          
+    ## [46] "global_sentiment_polarity"     "global_rate_positive_words"    "global_rate_negative_words"   
+    ## [49] "rate_positive_words"           "rate_negative_words"           "avg_positive_polarity"        
+    ## [52] "min_positive_polarity"         "max_positive_polarity"         "avg_negative_polarity"        
+    ## [55] "min_negative_polarity"         "max_negative_polarity"         "title_subjectivity"           
+    ## [58] "title_sentiment_polarity"      "abs_title_subjectivity"        "abs_title_sentiment_polarity" 
     ## [61] "shares"
 
 ``` r
@@ -70,11 +75,11 @@ head(onpdata_world$data_channel_is_world)
 
 ``` r
 #create training and test data set
+library(caret)
 set.seed(111)
-train <- sample(1:nrow(onpdata_world), size = nrow(onpdata_world)*0.70) 
-test <- dplyr::setdiff(1:nrow(onpdata_world), train)
-worldTrain <- onpdata_world[train, ] 
-worldTest <- onpdata_world[test, ]
+trainIndex <- createDataPartition(onpdata_world$shares, p = 0.7, list = FALSE) 
+worldTrain <- onpdata_world[trainIndex, ]
+worldTest <- onpdata_world[-trainIndex, ]
 ```
 
 *You should produce some basic (but meaningful) summary statistics and
@@ -86,7 +91,7 @@ summary(worldTrain$shares)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##      41     827    1100    2283    1900  284700
+    ##      41     827    1100    2272    1900  128500
 
 *As you will automate this same analysis across other data, you can’t
 describe the trends you see in the graph (unless you want to try to
