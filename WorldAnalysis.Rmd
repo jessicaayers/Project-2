@@ -51,7 +51,7 @@ head(onpdata_world$data_channel_is_world)
 
 **RINA and JESS
 
-```{r}
+```{r, message = FALSE}
 #create training and test data set
 library(caret)
 set.seed(111)
@@ -66,6 +66,60 @@ worldTest <- onpdata_world[-trainIndex, ]
 summary(worldTrain$shares)
 ```
 
+The above summary provides the minimum, maximum, median, and mean of the number of shares in the training data. The first and third quantile are also included.
+
+Since our response variable is the number of shares, we can first look at when the articles were published and the frequency for each day.
+
+```{r}
+m <- sum(worldTrain$weekday_is_monday)
+tu <- sum(worldTrain$weekday_is_tuesday)
+wed <- sum(worldTrain$weekday_is_wednesday)
+th <- sum(worldTrain$weekday_is_thursday)
+f <- sum(worldTrain$weekday_is_friday)
+sat <- sum(worldTrain$weekday_is_saturday)
+sun <-sum(worldTrain$weekday_is_sunday)
+data.frame(monday = m, tuesday = tu, wednesday = wed, thursday = th, friday = f, saturday = sat, sunday = sun)
+days <- c(m, tu, wed, th, f, sat, sun)
+```
+
+From the above sums we can identify which day has the largest amount of published articles. We can visualize this by creating a bar graph as seen below.
+
+```{r}
+plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
+```
+
+We can also look at different attributes that the articles have such as number of images and number of number of videos. We can explore if there are more shares with more images or videos.
+
+```{r}
+worldTrain %>%
+  group_by(num_imgs, num_videos) %>%
+  summarise(mean = mean(shares), sd = sd(shares))
+```
+
+Let's visualize this. First for number of images:
+
+```{r}
+ggplot(worldTrain, aes(x = num_imgs, y = shares)) +
+  geom_point() +
+    geom_smooth(method = "lm", col = "green") + 
+  geom_smooth() + 
+   labs(title = "Number of Shares vs Number of Images", x = "Number of Images", y = "Number of Shares")
+```
+
+From the above plot if the trend shows a positive linear line, as number of images included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of images. If no trend is shown, the number of images included has no impact on overall shares. 
+
+For number of videos:
+
+```{r}
+ggplot(worldTrain, aes(x = num_videos, y = shares)) +
+  geom_point() + 
+  geom_smooth(method = "lm", col = "green") + 
+  geom_smooth() + 
+  labs(title = "Number of Shares vs Number of Videos", x = "Number of Videos", y = "Number of Shares")
+```
+
+Similar to above, from the above plot if the trend shows a positive linear line, as number of videos included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of videos If no trend is shown, the number of videos included has no impact on overall shares. 
+
 *As you will automate this same analysis across other data, you can’t describe the trends you see in the graph (unless you want to try to automate that!). You should describe what to look for in the summary statistics/plots to help the reader understand the summary or graph.*
 
 # Modeling
@@ -73,6 +127,19 @@ summary(worldTrain$shares)
 **RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
+
+```{r, eval = FALSE}
+library(randomForest)
+#using cross validation
+ncol(worldTrain)
+rfFit <- train(shares ~ ., data = worldTrain, method = "rf", 
+               trControl = trainControl(method = "cv", number = 5), 
+               tuneGrid = data.frame(mtry = 1:60))
+rfFit$results
+rfFit$bestTune
+rfPred <- predict(rfFit, newdata = worldTest)
+postResample(rfPred, worldTest$shares)
+```
 
 *You’ll need to split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible.*
 
@@ -87,6 +154,10 @@ summary(worldTrain$shares)
 **RINA or JESS**
 
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
+
+```{r}
+#c(lin1 = lin1RMSE, lin2 = lin2RMSE, rf = rfRMSE, boost = boostRMSE)
+```
 
 # Automation
 
