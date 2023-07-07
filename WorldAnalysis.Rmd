@@ -140,6 +140,20 @@ Similar to above, from the above plot if the trend shows a positive linear line,
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
 
+```{r}
+worldTrain <- worldTrain %>%
+  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
+
+worldTest <- worldTest %>%
+  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
+
+lmFit2 <- train(shares ~ n_non_stop_words + num_hrefs + num_imgs + average_token_length + kw_min_avg + kw_max_avg + kw_avg_avg, data = worldTrain, method = "lm",
+preProcess = c("center", "scale"),
+trControl = trainControl(method = "cv", number = 10))
+summary(lmFit2)
+lmFit2
+```
+
 ```{r, eval = FALSE}
 library(randomForest)
 #using cross validation
@@ -168,7 +182,7 @@ postResample(rfPred, worldTest$shares)
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r}
-#c(lin1 = lin1RMSE, lin2 = lin2RMSE, rf = rfRMSE, boost = boostRMSE)
+#c(lin1 = lin1RMSE, linear2 = lmFit2$RMSE, rf = rfRMSE, boost = boostRMSE)
 ```
 
 # Automation

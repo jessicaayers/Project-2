@@ -86,24 +86,6 @@ head(onpdata_world$data_channel_is_world)
 ``` r
 #create training and test data set
 library(caret)
-```
-
-    ## Warning: package 'caret' was built under R version 4.2.3
-
-    ## Loading required package: lattice
-
-    ## Registered S3 method overwritten by 'data.table':
-    ##   method           from
-    ##   print.data.table
-
-    ## 
-    ## Attaching package: 'caret'
-
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     lift
-
-``` r
 set.seed(111)
 trainIndex <- createDataPartition(onpdata_world$shares, p = 0.7, list = FALSE) 
 worldTrain <- onpdata_world[trainIndex, ]
@@ -154,7 +136,7 @@ seen below.
 plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
 ```
 
-![](../unnamed-chunk-8-1.png)
+![](./images/unnamed-chunk-11-1.png)<!-- -->
 
 We can also look at different attributes that the articles have such as
 number of images and number of number of videos. We can explore if there
@@ -197,7 +179,7 @@ ggplot(worldTrain, aes(x = num_imgs, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](../unnamed-chunk-10-1.png)
+![](./images/unnamed-chunk-13-1.png)<!-- -->
 
 From the above plot if the trend shows a positive linear line, as number
 of images included in the article increases as does the number of
@@ -218,7 +200,7 @@ ggplot(worldTrain, aes(x = num_videos, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](../unnamed-chunk-11-1.png)
+![](./images/unnamed-chunk-14-1.png)<!-- -->
 
 Similar to above, from the above plot if the trend shows a positive
 linear line, as number of videos included in the article increases as
@@ -239,6 +221,63 @@ ensemble model you are using**
 **JESS: linear regression & random forest model & explanation of the
 idea of a linear regression model & explanation of the ensemble model
 you are using**
+
+``` r
+worldTrain <- worldTrain %>%
+  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
+
+worldTest <- worldTest %>%
+  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
+
+lmFit2 <- train(shares ~ n_non_stop_words + num_hrefs + num_imgs + average_token_length + kw_min_avg + kw_max_avg + kw_avg_avg, data = worldTrain, method = "lm",
+preProcess = c("center", "scale"),
+trControl = trainControl(method = "cv", number = 10))
+summary(lmFit2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = .outcome ~ ., data = dat)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ##  -7896  -1464   -818    -62 123129 
+    ## 
+    ## Coefficients:
+    ##                      Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           2271.55      66.26  34.283  < 2e-16 ***
+    ## n_non_stop_words      1408.15     246.64   5.709 1.19e-08 ***
+    ## num_hrefs              234.57      69.95   3.353 0.000804 ***
+    ## num_imgs               371.37      70.17   5.292 1.25e-07 ***
+    ## average_token_length -1631.24     248.61  -6.562 5.78e-11 ***
+    ## kw_min_avg            -550.66      88.99  -6.188 6.52e-10 ***
+    ## kw_max_avg            -758.31     138.59  -5.471 4.65e-08 ***
+    ## kw_avg_avg            1272.52     153.44   8.293  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 5089 on 5892 degrees of freedom
+    ## Multiple R-squared:  0.03501,    Adjusted R-squared:  0.03386 
+    ## F-statistic: 30.54 on 7 and 5892 DF,  p-value: < 2.2e-16
+
+``` r
+lmFit2
+```
+
+    ## Linear Regression 
+    ## 
+    ## 5900 samples
+    ##    7 predictor
+    ## 
+    ## Pre-processing: centered (7), scaled (7) 
+    ## Resampling: Cross-Validated (10 fold) 
+    ## Summary of sample sizes: 5309, 5311, 5311, 5311, 5309, 5309, ... 
+    ## Resampling results:
+    ## 
+    ##   RMSE      Rsquared    MAE     
+    ##   5007.572  0.03619978  1886.947
+    ## 
+    ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
 ``` r
 library(randomForest)
@@ -274,7 +313,7 @@ declared (this should be automated to be correct across all the created
 documents).*
 
 ``` r
-#c(lin1 = lin1RMSE, lin2 = lin2RMSE, rf = rfRMSE, boost = boostRMSE)
+#c(lin1 = lin1RMSE, linear2 = lmFit2$RMSE, rf = rfRMSE, boost = boostRMSE)
 ```
 
 # Automation
