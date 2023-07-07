@@ -13,10 +13,10 @@ output_dir = "WorldAnalysis" ,
 output_options = list(html_preview = FALSE))
 ```
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(fig.path = "../images/")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path="./images/")
+knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 
 # Introduction
