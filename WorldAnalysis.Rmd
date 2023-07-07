@@ -14,8 +14,9 @@ output_options = list(html_preview = FALSE))
 ```
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(fig.path = "/Users/jessayers/Documents/ST 558/TOPIC 3/Project-2/")
+knitr::opts_chunk$set(fig.path = "../images/")
 ```
+
 
 
 # Introduction
@@ -131,6 +132,11 @@ Similar to above, from the above plot if the trend shows a positive linear line,
 # Modeling
 
 **RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
+
+```{r}
+
+```
+
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
 
