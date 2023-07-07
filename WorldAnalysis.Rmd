@@ -13,6 +13,11 @@ output_dir = "WorldAnalysis" ,
 output_options = list(html_preview = FALSE))
 ```
 
+```{r, echo = FALSE}
+knitr::opts_chunk$set(fig.path = "/Users/jessayers/Documents/ST 558/TOPIC 3/Project-2/")
+```
+
+
 # Introduction
 
 **RINA**

@@ -136,7 +136,7 @@ seen below.
 plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
 ```
 
-![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/WorldAnalysis/WorldAnalysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/unnamed-chunk-8-1.png)<!-- -->
 
 We can also look at different attributes that the articles have such as
 number of images and number of number of videos. We can explore if there
@@ -179,7 +179,7 @@ ggplot(worldTrain, aes(x = num_imgs, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/WorldAnalysis/WorldAnalysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/unnamed-chunk-10-1.png)<!-- -->
 
 From the above plot if the trend shows a positive linear line, as number
 of images included in the article increases as does the number of
@@ -200,7 +200,7 @@ ggplot(worldTrain, aes(x = num_videos, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/WorldAnalysis/WorldAnalysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/unnamed-chunk-11-1.png)<!-- -->
 
 Similar to above, from the above plot if the trend shows a positive
 linear line, as number of videos included in the article increases as
