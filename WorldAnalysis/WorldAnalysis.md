@@ -179,7 +179,7 @@ ggplot(worldTrain, aes(x = num_imgs, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/unnamed-chunk-10-1.png)<!-- -->
+![](../unnamed-chunk-10-1.png)
 
 From the above plot if the trend shows a positive linear line, as number
 of images included in the article increases as does the number of
@@ -200,7 +200,7 @@ ggplot(worldTrain, aes(x = num_videos, y = shares)) +
     ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 
-![](/Users/jessayers/Documents/ST%20558/TOPIC%203/Project-2/unnamed-chunk-11-1.png)<!-- -->
+![](../unnamed-chunk-11-1.png)
 
 Similar to above, from the above plot if the trend shows a positive
 linear line, as number of videos included in the article increases as
