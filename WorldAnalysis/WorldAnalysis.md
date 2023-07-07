@@ -136,7 +136,7 @@ seen below.
 plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
 ```
 
-![](unnamed-chunk-10-1.png)
+![](../unnamed-chunk-8-1.png)
 
 We can also look at different attributes that the articles have such as
 number of images and number of number of videos. We can explore if there
