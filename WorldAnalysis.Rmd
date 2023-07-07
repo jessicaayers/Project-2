@@ -17,6 +17,7 @@ output_options = list(html_preview = FALSE))
 
 **RINA**
 
+
 *You should have an introduction section that briefly describes the data and the variables you have to work with (just discuss the ones you want to use). Your target variables is the shares variable.*
 
 *You should also mention the purpose of your analysis and the methods you’ll use to model the response. You’ll describe those in more detail later.*
@@ -27,7 +28,7 @@ output_options = list(html_preview = FALSE))
 
 *Use a relative path to import the data. Subset the data to work on the data channel of interest.*
 
-```{r, message = FALSE}
+```{r, message = FALSE,warning=FALSE}
 library(tidyverse)
 #import data set
 #my data set is stored in the folder above where I have the project 2 folder
