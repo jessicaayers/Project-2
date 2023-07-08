@@ -4,14 +4,15 @@ author: "Rina Deka and Jessica Ayers"
 date: "2023-06-29"
 ---
 
-```{r, eval = FALSE, echo = FALSE}
-#used getwd() and setwd() to set my working directory
-#using relative paths
-rmarkdown::render("WorldAnalysis.Rmd",
-output_format = "github_document",  
-output_dir = "WorldAnalysis" ,
-output_options = list(html_preview = FALSE))
+```{r packages}
+library(tidyverse)
+library(rmarkdown)
+library(caret)
+library(corrplot)
+library(gbm)
+library(randomForest)
 ```
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.path="./images/")
@@ -34,79 +35,104 @@ knitr::opts_chunk$set(echo = TRUE)
 
 *Use a relative path to import the data. Subset the data to work on the data channel of interest.*
 
-```{r, message = FALSE,warning=FALSE}
-library(tidyverse)
+```{r data, message = FALSE,warning=FALSE}
 #import data set
 #my data set is stored in the folder above where I have the project 2 folder
 onpdata <- read_csv("../OnlineNewsPopularity/OnlineNewsPopularity.csv")
-#find names of variables
-attributes(onpdata)$names
-#want to subset to one category of data_channel_is*
-#using data_channel_is_world for the primary analysis
-onpdata_world <- subset(onpdata, data_channel_is_world == 1)
-# onpdata_lifestyle <- subset(onpdata, data_channel_is_lifestyle == 1)
-# onpdata_entertainment <- subset(onpdata, data_channel_is_entertainment == 1)
-# onpdata_bus <- subset(onpdata, data_channel_is_bus == 1)
-# onpdata_socmed <- subset(onpdata, data_channel_is_socmed == 1)
-# onpdata_tech <- subset(onpdata, data_channel_is_tech == 1)
+#create new variable to represent type of channel to use as parameters
+for(i in 1:nrow(onpdata)){
+  if(onpdata$data_channel_is_lifestyle[i] == 1){
+    onpdata$channel[i] <- "Lifestyle"
+  }
+  else if(onpdata$data_channel_is_entertainment[i] == 1){
+    onpdata$channel[i] <- "Entertainment"
+  }
+  else if(onpdata$data_channel_is_bus[i] == 1){
+    onpdata$channel[i] <- "Bus"
+  }
+  else if(onpdata$data_channel_is_socmed[i] == 1){
+    onpdata$channel[i] <- "Socmed"
+  }
+  else if(onpdata$data_channel_is_tech[i] == 1){
+    onpdata$channel[i] <- "Tech"
+  }
+  else if(onpdata$data_channel_is_world[i] == 1){
+    onpdata$channel[i] <- "World"
+  }
+}
+```
 
-#check that subset is correct
-head(onpdata_world$data_channel_is_world)
+```{r automation}
+channelIDs <- unique(onpdata$channel)
+output_file <- paste0(channelIDs, "Analysis.md")
+params <- lapply(channelIDs, FUN = function(x){list(channel=x)})
+analysis <- tibble(output_file, params)
+```
+
+```{r render, eval = FALSE}
+apply(analysis, MARGIN = 1, FUN = function(x){
+  render(input = "WorldAnalysis.Rmd", output_file = x[[1]], params = x[[2]])
+})
+```
+
+```{r subset}
+onpdata_subset <- subset(onpdata, channel == params[[2]])
+unique(onpdata_subset$channel)
 ```
 
 # Summarizations
 
 **RINA and JESS
 
-```{r, message = FALSE}
+```{r trainandtest, message = FALSE}
 #create training and test data set
 library(caret)
 set.seed(111)
-trainIndex <- createDataPartition(onpdata_world$shares, p = 0.7, list = FALSE) 
-worldTrain <- onpdata_world[trainIndex, ]
-worldTest <- onpdata_world[-trainIndex, ]
+trainIndex <- createDataPartition(onpdata_subset$shares, p = 0.7, list = FALSE) 
+dataTrain <- onpdata_subset[trainIndex, ]
+dataTest <- onpdata_subset[-trainIndex, ]
 ```
 
 *You should produce some basic (but meaningful) summary statistics and plots about the training data you are working with (especially as it relates to your response).*
 
-```{r}
-summary(worldTrain$shares)
+```{r shares}
+summary(dataTrain$shares)
 ```
 
 The above summary provides the minimum, maximum, median, and mean of the number of shares in the training data. The first and third quantile are also included.
 
 Since our response variable is the number of shares, we can first look at when the articles were published and the frequency for each day.
 
-```{r}
-m <- sum(worldTrain$weekday_is_monday)
-tu <- sum(worldTrain$weekday_is_tuesday)
-wed <- sum(worldTrain$weekday_is_wednesday)
-th <- sum(worldTrain$weekday_is_thursday)
-f <- sum(worldTrain$weekday_is_friday)
-sat <- sum(worldTrain$weekday_is_saturday)
-sun <-sum(worldTrain$weekday_is_sunday)
+```{r days}
+m <- sum(dataTrain$weekday_is_monday)
+tu <- sum(dataTrain$weekday_is_tuesday)
+wed <- sum(dataTrain$weekday_is_wednesday)
+th <- sum(dataTrain$weekday_is_thursday)
+f <- sum(dataTrain$weekday_is_friday)
+sat <- sum(dataTrain$weekday_is_saturday)
+sun <-sum(dataTrain$weekday_is_sunday)
 data.frame(monday = m, tuesday = tu, wednesday = wed, thursday = th, friday = f, saturday = sat, sunday = sun)
 days <- c(m, tu, wed, th, f, sat, sun)
 ```
 
 From the above sums we can identify which day has the largest amount of published articles. We can visualize this by creating a bar graph as seen below.
 
-```{r}
-plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
+```{r barplot}
+barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
 ```
 
 We can also look at different attributes that the articles have such as number of images and number of number of videos. We can explore if there are more shares with more images or videos.
 
-```{r}
-worldTrain %>%
+```{r sum}
+dataTrain %>%
   group_by(num_imgs, num_videos) %>%
   summarise(mean = mean(shares), sd = sd(shares))
 ```
 
 Let's visualize this. First for number of images:
 
-```{r}
-ggplot(worldTrain, aes(x = num_imgs, y = shares)) +
+```{r plot1}
+ggplot(dataTrain, aes(x = num_imgs, y = shares)) +
   geom_point() +
     geom_smooth(method = "lm", col = "green") + 
   geom_smooth() + 
@@ -117,8 +143,8 @@ From the above plot if the trend shows a positive linear line, as number of imag
 
 For number of videos:
 
-```{r}
-ggplot(worldTrain, aes(x = num_videos, y = shares)) +
+```{r plot2}
+ggplot(dataTrain, aes(x = num_videos, y = shares)) +
   geom_point() + 
   geom_smooth(method = "lm", col = "green") + 
   geom_smooth() + 
@@ -127,56 +153,42 @@ ggplot(worldTrain, aes(x = num_videos, y = shares)) +
 
 Similar to above, from the above plot if the trend shows a positive linear line, as number of videos included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of videos If no trend is shown, the number of videos included has no impact on overall shares. 
 
-```{r}
-Correlation <- cor(select(worldTrain, 2:13), method = "spearman")
-#install corrplot library
-library(corrplot)
-corrplot(Correlation, type = "upper", tl.pos = "lt")
-Correlation2 <-cor(select(worldTrain, 20:40))
-corrplot(Correlation2, type = "upper", tl.pos = "lt")
-Correlation3 <-cor(select(worldTrain, 41:60))
-corrplot(Correlation3, type = "upper", tl.pos = "lt")
+```{r corr}
+correlation <- cor(select(dataTrain, 2:13), method = "spearman")
+corrplot(correlation, type = "upper", tl.pos = "lt")
+correlation2 <-cor(select(dataTrain, 20:40))
+corrplot(correlation2, type = "upper", tl.pos = "lt")
+correlation3 <-cor(select(dataTrain, 41:60))
+corrplot(correlation3, type = "upper", tl.pos = "lt")
 ```
 
 *As you will automate this same analysis across other data, you can’t describe the trends you see in the graph (unless you want to try to automate that!). You should describe what to look for in the summary statistics/plots to help the reader understand the summary or graph.*
 
 # Modeling
 
-```{r}
-
-```
-
-
 **RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
 
-
-
-#preprocess the data
-```{r}
-library(caret)
-worldTrain <- worldTrain %>% select(-starts_with("data_channel"),-url)
-worldTest <- worldTest %>% select(-starts_with("data_channel"),-url)
-preprocess <- preProcess(worldTrain, method = c("center", "scale"))
-worldTrainPreprocessed <- predict(preprocess, worldTrain)
-worldTestPreprocessed <- predict(preprocess, worldTest)
+```{r preprocess}
+dataTrain <- dataTrain %>% select(-starts_with("data_channel"),-url)
+dataTest <- dataTest %>% select(-starts_with("data_channel"),-url)
+preprocess <- preProcess(dataTrain, method = c("center", "scale"))
+trainPreprocessed <- predict(preprocess, dataTrain)
+testPreprocessed <- predict(preprocess, dataTest)
 ```
 
-```{r}
-lmFit1<- train(shares ~ ., data = worldTrain, method = "lm",preProcess=c("center","scale"),
+```{r linear1}
+lmFit1<- train(shares ~ ., data = dataTrain, method = "lm",preProcess=c("center","scale"),
 trControl = trainControl(method = "cv", number = 5))
 
 summary(lmFit1)
 
-lmFit1Pred <- predict(lmFit1, newdata = worldTestPreprocessed)
-lm1 <- postResample(lmFit2Pred, worldTestPreprocessed$shares)
+lmFit1Pred <- predict(lmFit1, newdata = testPreprocessed)
+lm1 <- postResample(lmFit2Pred, testPreprocessed$shares)
 ```
 
 
 
-```{r,warning=FALSE,echo=FALSE,cache=FALSE}
-library(gbm)
-#using cross validation
-
+```{r boosted1 ,warning=FALSE,echo=FALSE,cache=FALSE}
 control <- trainControl(method = "cv",number = 5)
 tuningGrid <- expand.grid(n.trees = c(25, 50, 100, 150, 200),
                           interaction.depth = 1:4,
@@ -184,48 +196,48 @@ tuningGrid <- expand.grid(n.trees = c(25, 50, 100, 150, 200),
                           n.minobsinnode = 10)
 
 
-boosted_tree_model <- train(shares ~ ., data = worldTrainPreprocessed, method = "gbm", trControl = control, tuneGrid = tuningGrid)
+boosted_tree_model <- train(shares ~ ., data = trainPreprocessed, method = "gbm", trControl = control, tuneGrid = tuningGrid)
 
 ```
-```{r}
+```{r boosted2}
 boosted_tree_model$bestTune
 ```
 
-```{r}
+```{r boosted3}
 boosted_tree_model$results
 ```
 
-```{r}
-boosted_tree_predictions <- predict(boosted_tree_model, newdata = worldTestPreprocessed)
+```{r boosted4}
+boosted_tree_predictions <- predict(boosted_tree_model, newdata = testPreprocessed)
 
-boosted_tree <- postResample(boosted_tree_predictions, worldTestPreprocessed$shares)
+boosted_tree <- postResample(boosted_tree_predictions, testPreprocessed$shares)
 boosted_tree
 ```
 
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
 
-```{r, cache = TRUE,warning=FALSE,message=FALSE}
-lmFit2 <- train(shares ~ .^2, data = worldTrain, method = "lm",preProcess=c("center","scale"),
+```{r linear2, cache = TRUE,warning=FALSE,message=FALSE}
+lmFit2 <- train(shares ~ .^2, data = dataTrain, method = "lm",preProcess=c("center","scale"),
 trControl = trainControl(method = "cv", number = 5))
 
 summary(lmFit2)
 
-lmFit2Pred <- predict(lmFit2, newdata = worldTest)
-lm2 <- postResample(lmFit2Pred, worldTest$shares)
+lmFit2Pred <- predict(lmFit2, newdata = dataTest)
+lm2 <- postResample(lmFit2Pred, dataTest$shares)
 ```
 
-```{r cache=TRUE}
+```{r randomforest, cache=TRUE}
 library(randomForest)
 #using cross validation
-ncol(worldTrain)
-rfFit <- train(shares ~ ., data = worldTrainPreprocessed, method = "rf", 
+#only used 1:10 to keep run time low
+rfFit <- train(shares ~ ., data = trainPreprocessed, method = "rf", 
                trControl = trainControl(method = "cv", number = 5), 
-               tuneGrid = data.frame(mtry = 1:15))
+               tuneGrid = data.frame(mtry = 1:10))
 rfFit$results
 rfFit$bestTune
-rfPred <- predict(rfFit, newdata = worldTest)
-rf <- postResample(rfPred, worldTest$shares)
+rfPred <- predict(rfFit, newdata = testPreprocessed)
+rf <- postResample(rfPred, testPreprocessed$shares)
 ```
 
 
@@ -244,8 +256,12 @@ rf <- postResample(rfPred, worldTest$shares)
 **RINA **
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
-```{r}
-#data.frame(linear2 = lm2, randomForest = rf)
+```{r comparison}
+df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree, randomForest = rf)
+dftransp <- as.data.frame(t(df))
+dftransp <- dftransp %>%
+  arrange(RMSE)
+dftransp[1, ]
 ```
 
 # Automation
