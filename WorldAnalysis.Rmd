@@ -131,8 +131,44 @@ Similar to above, from the above plot if the trend shows a positive linear line,
 
 # Modeling
 
+```{r}
+
+```
+
+
 **RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
 
+
+
+#preprocess the data
+```{r}
+library(caret)
+preprocess <- preProcess(worldTrain, method = c("center", "scale"))
+worldTrainPreprocessed <- predict(preprocess, worldTrain)
+worldTestPreprocessed <- predict(preprocess, worldTest)
+```
+```{r}
+ncol(worldTrainPreprocessed)
+```
+```{r}
+colnames(worldTrainPreprocessed)
+```
+
+
+```{r,warning=FALSE,echo=FALSE}
+library(gbm)
+#using cross validation
+
+control <- trainControl(method = "cv",number = 5)
+tuningGrid <- expand.grid(n.trees = c(25, 50, 100, 150, 200),
+                          interaction.depth = 1:4,
+                          shrinkage = 0.1, 
+                          n.minobsinnode = 10)
+
+
+boosted_tree_model <- train(shares ~ ., data = worldTrainPreprocessed, method = "gbm", trControl = control, tuneGrid = tuningGrid)
+
+```
 ```{r}
 
 ```
@@ -163,8 +199,7 @@ postResample(rfPred, worldTest$shares)
 
 ## Comparison
 
-**RINA or JESS**
-
+**RINA **
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r}
