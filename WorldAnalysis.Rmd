@@ -154,19 +154,26 @@ corrplot(Correlation3, type = "upper", tl.pos = "lt")
 #preprocess the data
 ```{r}
 library(caret)
+worldTrain <- worldTrain %>% select(-starts_with("data_channel"),-url)
+worldTest <- worldTest %>% select(-starts_with("data_channel"),-url)
 preprocess <- preProcess(worldTrain, method = c("center", "scale"))
 worldTrainPreprocessed <- predict(preprocess, worldTrain)
 worldTestPreprocessed <- predict(preprocess, worldTest)
 ```
+
 ```{r}
-ncol(worldTrainPreprocessed)
-```
-```{r}
-colnames(worldTrainPreprocessed)
+lmFit1<- train(shares ~ ., data = worldTrain, method = "lm",preProcess=c("center","scale"),
+trControl = trainControl(method = "cv", number = 5))
+
+summary(lmFit1)
+
+lmFit1Pred <- predict(lmFit1, newdata = worldTest)
+lm1 <- postResample(lmFit2Pred, worldTest$shares)
 ```
 
 
-```{r,warning=FALSE,echo=FALSE}
+
+```{r,warning=FALSE,echo=FALSE,cache=FALSE}
 library(gbm)
 #using cross validation
 
@@ -181,20 +188,25 @@ boosted_tree_model <- train(shares ~ ., data = worldTrainPreprocessed, method = 
 
 ```
 ```{r}
+boosted_tree_model$bestTune
+```
 
+```{r}
+boosted_tree_model$results
+```
+
+```{r}
+boosted_tree_predictions <- predict(boosted_tree_model, newdata = worldTestPreprocessed)
+
+boosted_tree <- postResample(boosted_tree_predictions, worldTest$shares)
+boosted_tree
 ```
 
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
 
-```{r, cache = TRUE}
-worldTest <- worldTest %>%
-  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
-
-worldTrain <- worldTrain %>%
-  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
-
-lmFit2 <- train(shares ~ .^2, data = worldTrain, method = "lm",
+```{r, cache = TRUE,warning=FALSE,message=FALSE}
+lmFit2 <- train(shares ~ .^2, data = worldTrain, method = "lm",preProcess=c("center","scale"),
 trControl = trainControl(method = "cv", number = 5))
 
 summary(lmFit2)
@@ -203,7 +215,7 @@ lmFit2Pred <- predict(lmFit2, newdata = worldTest)
 lm2 <- postResample(lmFit2Pred, worldTest$shares)
 ```
 
-```{r, cache = TRUE}
+```{r cache=TRUE}
 library(randomForest)
 #using cross validation
 ncol(worldTrain)
@@ -215,6 +227,9 @@ rfFit$bestTune
 rfPred <- predict(rfFit, newdata = worldTest)
 rf <- postResample(rfPred, worldTest$shares)
 ```
+
+
+
 
 *You’ll need to split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible.*
 
@@ -230,7 +245,7 @@ rf <- postResample(rfPred, worldTest$shares)
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r}
-data.frame(linear2 = lm2, randomForest = rf)
+#data.frame(linear2 = lm2, randomForest = rf)
 ```
 
 # Automation
