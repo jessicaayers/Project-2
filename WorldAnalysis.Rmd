@@ -4,7 +4,7 @@ author: "Rina Deka and Jessica Ayers"
 date: "2023-06-29"
 ---
 
-```{r packages}
+```{r packages, message = FALSE}
 library(tidyverse)
 library(rmarkdown)
 library(caret)
@@ -169,21 +169,21 @@ corrplot(correlation3, type = "upper", tl.pos = "lt")
 **RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
 
 ```{r preprocess}
-dataTrain <- dataTrain %>% select(-starts_with("data_channel"),-url)
-dataTest <- dataTest %>% select(-starts_with("data_channel"),-url)
+dataTrain <- dataTrain %>% select(-starts_with("data_channel"),-url, -channel)
+dataTest <- dataTest %>% select(-starts_with("data_channel"),-url, -channel)
 preprocess <- preProcess(dataTrain, method = c("center", "scale"))
 trainPreprocessed <- predict(preprocess, dataTrain)
 testPreprocessed <- predict(preprocess, dataTest)
 ```
 
-```{r linear1}
+```{r linear1, warning = FALSE}
 lmFit1<- train(shares ~ ., data = dataTrain, method = "lm",preProcess=c("center","scale"),
 trControl = trainControl(method = "cv", number = 5))
 
 summary(lmFit1)
 
 lmFit1Pred <- predict(lmFit1, newdata = testPreprocessed)
-lm1 <- postResample(lmFit2Pred, testPreprocessed$shares)
+lm1 <- postResample(lmFit1Pred, testPreprocessed$shares)
 ```
 
 
@@ -227,7 +227,7 @@ lmFit2Pred <- predict(lmFit2, newdata = dataTest)
 lm2 <- postResample(lmFit2Pred, dataTest$shares)
 ```
 
-```{r randomforest, cache=TRUE}
+```{r randomforest, cache=TRUE, eval = FALSE}
 library(randomForest)
 #using cross validation
 #only used 1:10 to keep run time low
@@ -257,7 +257,7 @@ rf <- postResample(rfPred, testPreprocessed$shares)
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r comparison}
-df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree, randomForest = rf)
+df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree)
 dftransp <- as.data.frame(t(df))
 dftransp <- dftransp %>%
   arrange(RMSE)
