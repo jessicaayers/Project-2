@@ -1,0 +1,244 @@
+---
+title: "Online News Popularity Analysis"
+author: "Rina Deka and Jessica Ayers"
+date: "2023-06-29"
+---
+
+```{r setup, include=FALSE}
+options(knitr.duplicate.label = "allow")
+knitr::opts_chunk$set(fig.path="./images/")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Introduction
+
+**RINA**
+
+
+*You should have an introduction section that briefly describes the data and the variables you have to work with (just discuss the ones you want to use). Your target variables is the shares variable.*
+
+*You should also mention the purpose of your analysis and the methods you’ll use to model the response. You’ll describe those in more detail later.*
+
+# Data
+
+**RINA or JESS**
+
+*Use a relative path to import the data. Subset the data to work on the data channel of interest.*
+
+```{r, message = FALSE,warning=FALSE}
+library(tidyverse)
+#import data set
+#my data set is stored in the folder above where I have the project 2 folder
+onpdata <- read_csv("../OnlineNewsPopularity/OnlineNewsPopularity.csv")
+#find names of variables
+attributes(onpdata)$names
+#create new variable to make automizing easier
+for(i in 1:nrow(onpdata)){
+  if(onpdata$data_channel_is_lifestyle[i] == 1){
+    onpdata$channel[i] <- "LifestyleAnalysis"
+  }
+  else if(onpdata$data_channel_is_entertainment[i] == 1){
+    onpdata$channel[i] <-"EntertainmentAnalysis"
+  }
+  else if(onpdata$data_channel_is_bus[i] == 1){
+    onpdata$channel[i] <- "BusAnalysis"
+  }
+  else if(onpdata$data_channel_is_socmed[i] == 1){
+    onpdata$channel[i] <- "SocmedAnalysis"
+  }
+  else if(onpdata$data_channel_is_tech[i] == 1){
+    onpdata$channel[i] <- "TechAnalysis"
+  }
+  else{
+    onpdata$channel[i] == "WorldAnalysis"
+  }
+}
+
+dataChannels <- unique(onpdata$channel)
+output_file <- paste0(dataChannels, ".html")
+params <- lapply(dataChannels, FUN = function(x){list(channel = x)})
+analysis <- tibble(output_file, params)
+
+for(i in 1:6){
+  sink(output_file[i])
+}
+
+library(rmarkdown)
+
+pwalk(analysis, render, input = "Analysis.Rmd")
+
+#apply(analysis, MARGIN = 1, FUN = function(x){
+ # render(input = "Analysis.Rmd", output_file = x[[1]], params = x[[2]])})
+#want to subset to one category of data_channel_is*
+#using data_channel_is_world for the primary analysis
+onpdata_subset <- subset(onpdata, channel == params$channel)
+```
+
+# Summarizations
+
+**RINA and JESS
+
+```{r, message = FALSE}
+#create training and test data set
+library(caret)
+set.seed(111)
+trainIndex <- createDataPartition(onpdata_subset$shares, p = 0.7, list = FALSE) 
+dataTrain <- onpdata_subset[trainIndex, ]
+dataTest <- onpdata_subset[-trainIndex, ]
+```
+
+*You should produce some basic (but meaningful) summary statistics and plots about the training data you are working with (especially as it relates to your response).*
+
+```{r}
+summary(dataTrain$shares)
+```
+
+The above summary provides the minimum, maximum, median, and mean of the number of shares in the training data. The first and third quantile are also included.
+
+Since our response variable is the number of shares, we can first look at when the articles were published and the frequency for each day.
+
+```{r}
+m <- sum(dataTrain$weekday_is_monday)
+tu <- sum(dataTrain$weekday_is_tuesday)
+wed <- sum(dataTrain$weekday_is_wednesday)
+th <- sum(dataTrain$weekday_is_thursday)
+f <- sum(dataTrain$weekday_is_friday)
+sat <- sum(dataTrain$weekday_is_saturday)
+sun <-sum(dataTrain$weekday_is_sunday)
+data.frame(monday = m, tuesday = tu, wednesday = wed, thursday = th, friday = f, saturday = sat, sunday = sun)
+days <- c(m, tu, wed, th, f, sat, sun)
+```
+
+From the above sums we can identify which day has the largest amount of published articles. We can visualize this by creating a bar graph as seen below.
+
+```{r}
+plot <- barplot(days, main = "Frequency of published articles on each day", ylab = "Count", xlab = "Day",names.arg = c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"), col = "blue")
+```
+
+We can also look at different attributes that the articles have such as number of images and number of number of videos. We can explore if there are more shares with more images or videos.
+
+```{r}
+dataTrain %>%
+  group_by(num_imgs, num_videos) %>%
+  summarise(mean = mean(shares), sd = sd(shares))
+```
+
+Let's visualize this. First for number of images:
+
+```{r}
+ggplot(dataTrain, aes(x = num_imgs, y = shares)) +
+  geom_point() +
+    geom_smooth(method = "lm", col = "green") + 
+  geom_smooth() + 
+   labs(title = "Number of Shares vs Number of Images", x = "Number of Images", y = "Number of Shares")
+```
+
+From the above plot if the trend shows a positive linear line, as number of images included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of images. If no trend is shown, the number of images included has no impact on overall shares. 
+
+For number of videos:
+
+```{r}
+ggplot(dataTrain, aes(x = num_videos, y = shares)) +
+  geom_point() + 
+  geom_smooth(method = "lm", col = "green") + 
+  geom_smooth() + 
+  labs(title = "Number of Shares vs Number of Videos", x = "Number of Videos", y = "Number of Shares")
+```
+
+Similar to above, from the above plot if the trend shows a positive linear line, as number of videos included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of videos If no trend is shown, the number of videos included has no impact on overall shares. 
+
+We can also look at correlations before building our models:
+
+```{r}
+Correlation <- cor(select(dataTrain, 2:13), method = "spearman")
+#install corrplot library
+library(corrplot)
+corrplot(Correlation, type = "upper", tl.pos = "lt")
+Correlation2 <-cor(select(dataTrain, 20:40))
+corrplot(Correlation2, type = "upper", tl.pos = "lt")
+Correlation3 <-cor(select(dataTrain, 41:60))
+corrplot(Correlation3, type = "upper", tl.pos = "lt")
+```
+
+The three correlation plots above split up the variables into groups to have better identification of the corresponding variables. For larger, blue dots, the two variable will have a correlation closer to 1 and for large, red dots, the two variables will have a correlation closer to -1. Both of these scenarios lead us to evaluate the possibility of multicollinearity between the two variables. 
+
+*As you will automate this same analysis across other data, you can’t describe the trends you see in the graph (unless you want to try to automate that!). You should describe what to look for in the summary statistics/plots to help the reader understand the summary or graph.*
+
+# Modeling
+
+**RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
+
+```{r}
+
+```
+
+
+**JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
+
+```{r, cache = TRUE}
+dataTest <- dataTest %>%
+  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
+
+dataTrain <- dataTrain %>%
+  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
+
+lmFit2 <- train(shares ~ .^2, data = dataTrain, method = "lm",
+trControl = trainControl(method = "cv", number = 5))
+
+lmFit2Pred <- predict(lmFit2, newdata = dataTest)
+lm2 <- postResample(lmFit2Pred, dataTest$shares)
+```
+
+```{r, cache = TRUE}
+library(randomForest)
+#using cross validation
+ncol(dataTrain)
+rfFit <- train(shares ~ ., data = dataTrain, method = "rf", 
+               trControl = trainControl(method = "cv", number = 5), 
+               tuneGrid = data.frame(mtry = 1:15))
+rfFit$results
+rfFit$bestTune
+rfPred <- predict(rfFit, newdata = dataTest)
+rf <- postResample(rfPred, dataTest$shares)
+```
+
+
+*The goal is to create models for predicting the number of shares in some way.*
+
+*Each group member should contribute a linear regression model and an ensemble tree-based model. As we are automating things, describing the chosen model is tough, so no need to worry about that.*
+
+*Both models should be chosen using cross-validation.*
+
+## Comparison
+
+**RINA or JESS**
+
+*All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
+
+Using smallest RMSE to declare the winner:
+
+```{r}
+df <- data.frame(linear2 = lm2, randomForest = rf)
+dftransp <- as.data.frame(t(df))
+dftransp <- dftransp %>%
+  arrange(RMSE)
+```
+
+The model will the best predictions compared on the test set is:
+
+```{r}
+dftransp[1, ]
+```
+
+# Automation
+
+**RINA or JESS**
+
+*Once you’ve completed the above for a particular data channel, adapt the code so that you can use a parameter in your build process. You should be able to automatically generate an analysis report for each data_channel_is_ variable* 
+
+*You’ll end up with six total outputted documents.*
+
+```{r}
+sink()
+```
