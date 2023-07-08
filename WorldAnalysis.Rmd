@@ -127,6 +127,17 @@ ggplot(worldTrain, aes(x = num_videos, y = shares)) +
 
 Similar to above, from the above plot if the trend shows a positive linear line, as number of videos included in the article increases as does the number of shares. If it shows a negative linear line, the number of shares decreases with the addition of videos If no trend is shown, the number of videos included has no impact on overall shares. 
 
+```{r}
+Correlation <- cor(select(worldTrain, 2:13), method = "spearman")
+#install corrplot library
+library(corrplot)
+corrplot(Correlation, type = "upper", tl.pos = "lt")
+Correlation2 <-cor(select(worldTrain, 20:40))
+corrplot(Correlation2, type = "upper", tl.pos = "lt")
+Correlation3 <-cor(select(worldTrain, 41:60))
+corrplot(Correlation3, type = "upper", tl.pos = "lt")
+```
+
 *As you will automate this same analysis across other data, you can’t describe the trends you see in the graph (unless you want to try to automate that!). You should describe what to look for in the summary statistics/plots to help the reader understand the summary or graph.*
 
 # Modeling
@@ -140,31 +151,33 @@ Similar to above, from the above plot if the trend shows a positive linear line,
 
 **JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
 
-```{r}
-worldTrain <- worldTrain %>%
-  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
-
+```{r, cache = TRUE}
 worldTest <- worldTest %>%
-  select(-data_channel_is_bus, -data_channel_is_entertainment, - data_channel_is_lifestyle, -data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world, -url)
+  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
 
-lmFit2 <- train(shares ~ n_non_stop_words + num_hrefs + num_imgs + average_token_length + kw_min_avg + kw_max_avg + kw_avg_avg, data = worldTrain, method = "lm",
-preProcess = c("center", "scale"),
-trControl = trainControl(method = "cv", number = 10))
+worldTrain <- worldTrain %>%
+  select(-url, -data_channel_is_bus, -data_channel_is_lifestyle, -data_channel_is_entertainment, - data_channel_is_socmed, - data_channel_is_tech, - data_channel_is_world)
+
+lmFit2 <- train(shares ~ .^2, data = worldTrain, method = "lm",
+trControl = trainControl(method = "cv", number = 5))
+
 summary(lmFit2)
-lmFit2
+
+lmFit2Pred <- predict(lmFit2, newdata = worldTest)
+lm2 <- postResample(lmFit2Pred, worldTest$shares)
 ```
 
-```{r, eval = FALSE}
+```{r, cache = TRUE}
 library(randomForest)
 #using cross validation
 ncol(worldTrain)
 rfFit <- train(shares ~ ., data = worldTrain, method = "rf", 
                trControl = trainControl(method = "cv", number = 5), 
-               tuneGrid = data.frame(mtry = 1:60))
+               tuneGrid = data.frame(mtry = 1:15))
 rfFit$results
 rfFit$bestTune
 rfPred <- predict(rfFit, newdata = worldTest)
-postResample(rfPred, worldTest$shares)
+rf <- postResample(rfPred, worldTest$shares)
 ```
 
 *You’ll need to split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible.*
@@ -182,7 +195,7 @@ postResample(rfPred, worldTest$shares)
 *All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r}
-#c(lin1 = lin1RMSE, linear2 = lmFit2$RMSE, rf = rfRMSE, boost = boostRMSE)
+data.frame(linear2 = lm2, randomForest = rf)
 ```
 
 # Automation
