@@ -167,8 +167,8 @@ trControl = trainControl(method = "cv", number = 5))
 
 summary(lmFit1)
 
-lmFit1Pred <- predict(lmFit1, newdata = worldTest)
-lm1 <- postResample(lmFit2Pred, worldTest$shares)
+lmFit1Pred <- predict(lmFit1, newdata = worldTestPreprocessed)
+lm1 <- postResample(lmFit2Pred, worldTestPreprocessed$shares)
 ```
 
 
@@ -198,7 +198,7 @@ boosted_tree_model$results
 ```{r}
 boosted_tree_predictions <- predict(boosted_tree_model, newdata = worldTestPreprocessed)
 
-boosted_tree <- postResample(boosted_tree_predictions, worldTest$shares)
+boosted_tree <- postResample(boosted_tree_predictions, worldTestPreprocessed$shares)
 boosted_tree
 ```
 
@@ -219,7 +219,7 @@ lm2 <- postResample(lmFit2Pred, worldTest$shares)
 library(randomForest)
 #using cross validation
 ncol(worldTrain)
-rfFit <- train(shares ~ ., data = worldTrain, method = "rf", 
+rfFit <- train(shares ~ ., data = worldTrainPreprocessed, method = "rf", 
                trControl = trainControl(method = "cv", number = 5), 
                tuneGrid = data.frame(mtry = 1:15))
 rfFit$results
