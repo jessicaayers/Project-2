@@ -31,10 +31,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Data
 
-**RINA or JESS**
-
-*Use a relative path to import the data. Subset the data to work on the data channel of interest.*
-
 ```{r data, message = FALSE,warning=FALSE}
 #import data set
 #my data set is stored in the folder above where I have the project 2 folder
@@ -82,8 +78,6 @@ unique(onpdata_subset$channel)
 
 # Summarizations
 
-**RINA and JESS
-
 ```{r trainandtest, message = FALSE}
 #create training and test data set
 library(caret)
@@ -92,8 +86,6 @@ trainIndex <- createDataPartition(onpdata_subset$shares, p = 0.7, list = FALSE)
 dataTrain <- onpdata_subset[trainIndex, ]
 dataTest <- onpdata_subset[-trainIndex, ]
 ```
-
-*You should produce some basic (but meaningful) summary statistics and plots about the training data you are working with (especially as it relates to your response).*
 
 ```{r shares}
 summary(dataTrain$shares)
@@ -162,11 +154,11 @@ correlation3 <-cor(select(dataTrain, 41:60))
 corrplot(correlation3, type = "upper", tl.pos = "lt")
 ```
 
-*As you will automate this same analysis across other data, you can’t describe the trends you see in the graph (unless you want to try to automate that!). You should describe what to look for in the summary statistics/plots to help the reader understand the summary or graph.*
+For plots with larger, blue dots the two variables have a correlation close to +1. For plots with larger, red dots the two variables have a correlation close to -1. Both of these scenarios show signs of multicollinearity.
 
 # Modeling
 
-**RINA: linear regression & boosted tree model & explanation of the ensemble model you are using**
+### Linear Regression
 
 ```{r preprocess}
 dataTrain <- dataTrain %>% select(-starts_with("data_channel"),-url, -channel)
@@ -186,7 +178,7 @@ lmFit1Pred <- predict(lmFit1, newdata = testPreprocessed)
 lm1 <- postResample(lmFit1Pred, testPreprocessed$shares)
 ```
 
-
+### Boosted Model
 
 ```{r boosted1 ,warning=FALSE,echo=FALSE,cache=FALSE}
 control <- trainControl(method = "cv",number = 5)
@@ -214,9 +206,6 @@ boosted_tree <- postResample(boosted_tree_predictions, testPreprocessed$shares)
 boosted_tree
 ```
 
-
-**JESS: linear regression & random forest model & explanation of the idea of a linear regression model & explanation of the ensemble model you are using**
-
 ```{r linear2, cache = TRUE,warning=FALSE,message=FALSE}
 lmFit2 <- train(shares ~ .^2, data = dataTrain, method = "lm",preProcess=c("center","scale"),
 trControl = trainControl(method = "cv", number = 5))
@@ -226,6 +215,8 @@ summary(lmFit2)
 lmFit2Pred <- predict(lmFit2, newdata = dataTest)
 lm2 <- postResample(lmFit2Pred, dataTest$shares)
 ```
+
+### Random Forest
 
 ```{r randomforest, cache=TRUE, eval = FALSE}
 library(randomForest)
@@ -240,35 +231,18 @@ rfPred <- predict(rfFit, newdata = testPreprocessed)
 rf <- postResample(rfPred, testPreprocessed$shares)
 ```
 
-
-
-
-*You’ll need to split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible.*
-
-*The goal is to create models for predicting the number of shares in some way.*
-
-*Each group member should contribute a linear regression model and an ensemble tree-based model. As we are automating things, describing the chosen model is tough, so no need to worry about that.*
-
-*Both models should be chosen using cross-validation.*
-
 ## Comparison
-
-**RINA **
-*All four of the models should be compared on the test set and a winner declared (this should be automated to be correct across all the created documents).*
 
 ```{r comparison}
 df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree)
 dftransp <- as.data.frame(t(df))
 dftransp <- dftransp %>%
   arrange(RMSE)
+```
+
+The winner model based on RMSE is:
+```{r winner}
 dftransp[1, ]
 ```
 
-# Automation
-
-**RINA or JESS**
-
-*Once you’ve completed the above for a particular data channel, adapt the code so that you can use a parameter in your build process. You should be able to automatically generate an analysis report for each data_channel_is_ variable* 
-
-*You’ll end up with six total outputted documents.*
 
