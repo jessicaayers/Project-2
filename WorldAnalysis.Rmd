@@ -160,6 +160,8 @@ For plots with larger, blue dots the two variables have a correlation close to +
 
 ### Linear Regression
 
+A linear regression is composed of a response variable and different predictors. In a simple linear regression model, a single predictor is chosen to model a potential relationship with the corresponding response variable. In a multiple linear regression model, multiple predictors, including higher order terms, can be included to describe the relationship with the response variable. This kind of model is considered a branch of supervised learning since we choose a response variable. Our goal is to predict values of the response using our defined model. In this scenario, our response variable is the number of shares. We want to predict the number of shares based on the defined linear models. The first linear model uses all numeric variables in the provided data set as predictors. The data is standardized to ensure analysis is done consistently regardless of units. The second linear model includes all numeric variables and their squared counterparts. 
+
 ```{r preprocess}
 dataTrain <- dataTrain %>% select(-starts_with("data_channel"),-url, -channel)
 dataTest <- dataTest %>% select(-starts_with("data_channel"),-url, -channel)
@@ -217,6 +219,8 @@ lm2 <- postResample(lmFit2Pred, dataTest$shares)
 ```
 
 ### Random Forest
+
+Random forest models are an improvement and extension of bagging tree models. Instead of creating trees based off each variable chosen as a predictor, a range of values are fitted to find the optimal amount of trees for a random forest model. Similar to linear regression models, random forest models do very well with prediction, but tree based methods do not have the same level of interpretability. The random forest model below takes bootstrapped samples, fits subsets of 1 to 10 different predictors and the best fit number of trees will be returned. Ideally, a larger range for `mtry` would be used to run this model using cross validation, however the run time was extremely long and inefficient. A smaller range of 1 to 10 was chosen. The centered and scaled values of the data were also used in this model. 
 
 ```{r randomforest, cache=TRUE}
 library(randomForest)
