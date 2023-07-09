@@ -1,25 +1,35 @@
 # Project-2
 
-Packages Used:
+## Purpose:
+
+The purpose of this repo is to explore different types of models predicting the number of shares from the Online News Popularity data. Six different files are created. Each one is unique to the type of data channel. Summary plots are created along with the creation of two different linear models, a boosted tree model, and a random forest model. At the end of the analysis, the model with the smallest RMSE (root mean squared error) is chosen to be the best fitting model. 
+
+## Packages Used:
 
 `library(tidyverse)`
+
 `library(rmarkdown)`
+
 `library(caret)`
+
 `library(corrplot)`
+
 `library(gbm)`
+
 `library(randomForest)`
 
-Links Used:
+## Links Used:
 
 Lifestyle
+
 Entertainment
+
 Bus
+
 Socmed
+
 Tech
+
 World
 
-Need to include:
-  - Brief description of the purpose of the repo
-  - List of packages used
-  - Links to the generated analyses
-  - Code used to create the analyses from a single .Rmd file (the **render** code)
+## Code: **add render code here**
