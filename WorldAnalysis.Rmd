@@ -238,13 +238,13 @@ rf <- postResample(rfPred, testPreprocessed$shares)
 ## Comparison
 
 ```{r comparison}
-df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree)
+df <- data.frame(linear1 = lm1, linear2 = lm2, boostedTree = boosted_tree, randomForest = rf)
 dftransp <- as.data.frame(t(df))
 dftransp <- dftransp %>%
   arrange(RMSE)
 ```
 
-The winner model based on RMSE is:
+The winning model based on RMSE is:
 ```{r winner}
 dftransp[1, ]
 ```
