@@ -66,13 +66,13 @@ analysis <- tibble(output_file, params)
 ```
 
 ```{r render, eval = FALSE}
-apply(analysis, MARGIN = 1, FUN = function(x){
-  render(input = "WorldAnalysis.Rmd", output_file = x[[1]], params = x[[2]])
-})
+for(i in 1:6){
+onpdata_subset <- subset(onpdata, channel == params[[i]])
+render(input = "WorldAnalysis.Rmd", output_file = output_file[i], params = params[i])
+}
 ```
 
 ```{r subset}
-onpdata_subset <- subset(onpdata, channel == params[[2]])
 unique(onpdata_subset$channel)
 ```
 
