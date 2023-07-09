@@ -20,16 +20,56 @@ The purpose of this repo is to explore different types of models predicting the 
 
 ## Links Used:
 
-Lifestyle
+[Lifestyle link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/LifestyleAnalysis.md)
 
-Entertainment
+[Entertainment link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/EntertainmentAnalysis.md)
 
-Bus
+[Bus link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/BusAnalysis.md)
 
-Socmed
+[Socmed link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/SocmedAnalysis.md)
 
-Tech
+[Tech link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/TechAnalysis.md)
 
-World
+[World link here](https://htmlpreview.github.io/?https://github.com/jessicaayers/Project-2/blob/main/WorldAnalysis.md)
 
-## Code: **add render code here**
+## Code: 
+
+First the Online News Popularity data was read in and the channel variable was created. The parameters used to automate the R Markdown file were based on the new channel variable. The render function was then looped through all 6 different channels along with subsetting the data as well.
+
+```{r data}
+onpdata <- read_csv("../OnlineNewsPopularity/OnlineNewsPopularity.csv")
+for(i in 1:nrow(onpdata)){
+  if(onpdata$data_channel_is_lifestyle[i] == 1){
+    onpdata$channel[i] <- "Lifestyle"
+  }
+  else if(onpdata$data_channel_is_entertainment[i] == 1){
+    onpdata$channel[i] <- "Entertainment"
+  }
+  else if(onpdata$data_channel_is_bus[i] == 1){
+    onpdata$channel[i] <- "Bus"
+  }
+  else if(onpdata$data_channel_is_socmed[i] == 1){
+    onpdata$channel[i] <- "Socmed"
+  }
+  else if(onpdata$data_channel_is_tech[i] == 1){
+    onpdata$channel[i] <- "Tech"
+  }
+  else if(onpdata$data_channel_is_world[i] == 1){
+    onpdata$channel[i] <- "World"
+  }
+}
+```
+
+```{r automation}
+channelIDs <- unique(onpdata$channel)
+output_file <- paste0(channelIDs, "Analysis.md")
+params <- lapply(channelIDs, FUN = function(x){list(channel=x)})
+analysis <- tibble(output_file, params)
+```
+
+```{r render, eval = FALSE}
+for(i in 1:6){
+onpdata_subset <- subset(onpdata, channel == params[[i]])
+render(input = "WorldAnalysis.Rmd", output_file = output_file[i], params = params[i])
+}
+```
