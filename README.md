@@ -36,8 +36,9 @@ The purpose of this repo is to explore different types of models predicting the 
 
 First the Online News Popularity data was read in and the channel variable was created. The parameters used to automate the R Markdown file were based on the new channel variable. The render function was then looped through all 6 different channels along with subsetting the data as well.
 
-```{r data}
+```{r}
 onpdata <- read_csv("../OnlineNewsPopularity/OnlineNewsPopularity.csv")
+
 for(i in 1:nrow(onpdata)){
   if(onpdata$data_channel_is_lifestyle[i] == 1){
     onpdata$channel[i] <- "Lifestyle"
@@ -60,16 +61,17 @@ for(i in 1:nrow(onpdata)){
 }
 ```
 
-```{r automation}
+```{r}
 channelIDs <- unique(onpdata$channel)
 output_file <- paste0(channelIDs, "Analysis.md")
 params <- lapply(channelIDs, FUN = function(x){list(channel=x)})
 analysis <- tibble(output_file, params)
 ```
 
-```{r render, eval = FALSE}
+```{r}
 for(i in 1:6){
 onpdata_subset <- subset(onpdata, channel == params[[i]])
 render(input = "WorldAnalysis.Rmd", output_file = output_file[i], params = params[i])
 }
 ```
+
