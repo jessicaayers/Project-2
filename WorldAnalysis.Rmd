@@ -218,7 +218,7 @@ lm2 <- postResample(lmFit2Pred, dataTest$shares)
 
 ### Random Forest
 
-```{r randomforest, cache=TRUE, eval = FALSE}
+```{r randomforest, cache=TRUE}
 library(randomForest)
 #using cross validation
 #only used 1:10 to keep run time low
