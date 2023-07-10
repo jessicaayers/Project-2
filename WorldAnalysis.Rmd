@@ -254,7 +254,7 @@ testPreprocessed <- predict(preprocess, dataTest)
 
 ```{r linear1, warning = FALSE}
 lmFit1<- train(shares ~ ., data = dataTrain, method = "lm",preProcess=c("center","scale"),
-trControl = trainControl(method = "cv", number = 5))
+trControl = trainControl(method = "cv", number = 3))
 
 summary(lmFit1)
 
@@ -271,7 +271,7 @@ Boosted trees are grown sequentially and reach subsequent tree is grown on a mod
 How is this process implemented? Specifically, in the case of regression trees, the predictions are taken in initially as 0. Then, the residuals are found (observed/predicted difference). A tree is then fit with d splits, and d+1 terminal nodes, with the residuals treated as the response here. The predictions are then updated with a recursive definition: the updated prediction is equal to the old/initial prediction, plus the shrinkage parameter lambda (shrinkage parameter slows the fitting process down) multiplying the the predictions obtained from the fitting. We then continue to update residuals for new predictions for B times. Below, we used cross-validation to choose the parameters n, B lambda, as well as N (the number of trees).
 
 ```{r boosted1 ,warning=FALSE,echo=FALSE,cache=FALSE}
-control <- trainControl(method = "cv",number = 5)
+control <- trainControl(method = "cv",number = 3)
 tuningGrid <- expand.grid(n.trees = c(25, 50, 100, 150, 200),
                           interaction.depth = 1:4,
                           shrinkage = 0.1, 
@@ -300,7 +300,7 @@ boosted_tree
 
 ```{r linear2, cache = TRUE,warning=FALSE,message=FALSE}
 lmFit2 <- train(shares ~ .^2, data = dataTrain, method = "lm",preProcess=c("center","scale"),
-trControl = trainControl(method = "cv", number = 5))
+trControl = trainControl(method = "cv", number = 3))
 
 summary(lmFit2)
 
@@ -317,7 +317,7 @@ library(randomForest)
 #using cross validation
 #only used 1:10 to keep run time low
 rfFit <- train(shares ~ ., data = trainPreprocessed, method = "rf", 
-               trControl = trainControl(method = "cv", number = 5), 
+               trControl = trainControl(method = "cv", number = 3), 
                tuneGrid = data.frame(mtry = 1:10))
 rfFit$results
 rfFit$bestTune
