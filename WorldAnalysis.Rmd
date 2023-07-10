@@ -312,7 +312,7 @@ lm2 <- postResample(lmFit2Pred, dataTest$shares)
 
 Random forest models are an improvement and extension of bagging tree models. Instead of creating trees based off each variable chosen as a predictor, a range of values are fitted to find the optimal amount of trees for a random forest model. Similar to linear regression models, random forest models do very well with prediction, but tree based methods do not have the same level of interpretability. The random forest model below takes bootstrapped samples, fits subsets of 1 to 10 different predictors and the best fit number of trees will be returned. Ideally, a larger range for `mtry` would be used to run this model using cross validation, however the run time was extremely long and inefficient. A smaller range of 1 to 10 was chosen. The centered and scaled values of the data were also used in this model. 
 
-```{r randomforest, cache=TRUE}
+```{r randomforest, cache=FALSE}
 library(randomForest)
 #using cross validation
 #only used 1:10 to keep run time low
