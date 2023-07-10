@@ -22,12 +22,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-**RINA**
+This is an exploration of online news popularity data. For our analyses, we look at variables in the  data set such as the number of shares for online news articles, and variables that could be correlated with the amount of times an article is shared. For example, we looked at the rate of positive words used in an article (and its complement, the rate of negative words used in an article), which measures how often positive (or negative) words are found in an article. We also looked at global sentiment polarity, which is a metric of how polarized sentimentally the given text is; as well as title subjectivity, which measures how subjective a title is (is the title more like a scientific journal, or an opinion piece?). Other variables explored include number of images, and number of videos included in an article.
 
-
-*You should have an introduction section that briefly describes the data and the variables you have to work with (just discuss the ones you want to use). Your target variables is the shares variable.*
-
-*You should also mention the purpose of your analysis and the methods you’ll use to model the response. You’ll describe those in more detail later.*
+The purpose of this analysis was to explore relationships in the data to see if there are any promising predictors (features) for predicting the amount of times an online news article is shared. This was implemented by using linear regression models, as well as random forest and boosted tree models (which is an ensemble method).
 
 # Data
 
