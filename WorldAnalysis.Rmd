@@ -153,6 +153,91 @@ corrplot(correlation3, type = "upper", tl.pos = "lt")
 
 For plots with larger, blue dots the two variables have a correlation close to +1. For plots with larger, red dots the two variables have a correlation close to -1. Both of these scenarios show signs of multicollinearity.
 
+Furthermore, we investigated polarization in the news, as well as whether or not negative or positive sentiment news is shared more. 
+
+Does it appear that news with a higher rate of positive words, or a higher rate of negative words, is shared more? 
+Let's first take a look at the rate of positive words and shares.
+```{r plot3}
+#rate_negative_words
+
+ggplot(dataTrain, aes(x=rate_positive_words, y=shares)) + 
+  geom_line(col="green") + 
+  labs(title = "Number of Shares by Rate of Positive Words", x = "Rate of Positive Words", y = "Number of Shares")
+```
+
+```{r plot4}
+ggplot(dataTrain, aes(x=rate_negative_words, y=shares)) + 
+  geom_line(col="red") + 
+  labs(title = "Number of Shares by Rate of Negative Words", x = "Rate of Negative Words", y = "Number of Shares")
+```
+
+It seems that there is a spike in shares for online news that has mostly (about 75%) positive words, with the rest of the words being deemed negative. It seems that news with a lot of negative words don't get shared much, but news with positive words do.
+
+Let's investigate this further. (Note: rate_negative_words is just the complement of rate_positive_words, but I did it twice for the sake of demonstration).
+
+```{r shares_by_positive_words}
+(shares_from_positive_words <- dataTrain %>%
+  group_by(rate_positive_words) %>%
+  summarise(mean = mean(shares), sd = sd(shares)))
+```
+```{r shares_by_negative_words}
+(shares_from_negative_words <- dataTrain %>%
+  group_by(rate_negative_words) %>%
+  summarise(mean = mean(shares), sd = sd(shares)))
+```
+
+```{r highest_right_share}
+rate_associated_with_highest_shares <- shares_from_positive_words %>%
+  arrange(desc(mean))
+
+rate_associated_with_highest_shares[1,]
+```
+It seems that the rate of positive words associated with the most average shares is about 71% (so 29% negative).
+
+Is there a relationship between global sentiment polarity and the rate of negative words? What about title subjectivity and global sentiment polarity? And title subjectivity with rate of positive words?
+
+
+```{r polarity_negativity_plot} 
+ggplot(dataTrain,aes(x=rate_negative_words,y=global_sentiment_polarity)) + 
+  geom_point(col="red") + 
+  geom_smooth(method="lm") +
+  labs(title = "Global Sentiment Polarity by Rate of Negative Words", x = "Rate of Negative Words", y = "Global Sentiment Polarity")
+```
+
+
+```{r subjectivity_polarity_plot}
+ggplot(dataTrain,aes(x=title_subjectivity,y=global_sentiment_polarity)) + 
+  geom_point(col="purple") + 
+  geom_smooth(method="lm") +
+  labs(title = "Global Sentiment Polarity by Rate of Negative Words", x = "Rate of Negative Words", y = "Global Sentiment Polarity")
+```
+
+```{r subjectivity_positivity_plot}
+ggplot(dataTrain,aes(x=title_subjectivity,y=rate_positive_words)) + 
+  geom_point(col="green") + 
+  geom_smooth(method="lm") +
+  labs(title = "Rate of Positive Words by Title Subjectivity", x = "Title Subjectivity", y = "Rate of Positive Words")
+```
+Overall, it doesn't seem like there's much of a relationship with the rate of positive words and title subjectivity, or title subjectivity with global sentiment polarity. However, at first glance there does seem to be a slightly negative relationship between the rate of negative words and global sentiment polarity at first glance but when taking a closer look it doesn't appear to be the case since there seems to be a lot of variation (points don't seem to "hug" the line and deviate qutie a bit from the regression line).
+
+Are subjective titles shared more? What about articles with higher global sentiment polarity? Let's take a look but adjust the scale of shares so that it's a bit easier to visualize.
+
+```{r log_shares_by_subjectivity_plot}
+ggplot(dataTrain, aes(x=title_subjectivity, y=log(shares))) + 
+  geom_jitter(col="pink") + 
+  geom_smooth(method="lm") +
+  labs(title = "Number of Shares by Title Subjectivity", x = "Title Subjectivity", y = "Number of Shares (Log Scale)")
+```
+
+```{r log_shares_by_polarity_plot}
+ggplot(dataTrain, aes(x=global_sentiment_polarity, y=log(shares))) + 
+  geom_jitter(col="cyan") + 
+  geom_smooth(method="lm") +
+  labs(title = "Number of Shares by Global Sentiment Polarity", x = "Global Sentiment Polarityy", y = "Number of Shares (Log Scale)")
+```
+There does not seem to be a linear relationship of shares with either global sentiment polarity or title subjectivity! 
+
+
 # Modeling
 
 ### Linear Regression
