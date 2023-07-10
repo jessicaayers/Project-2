@@ -264,6 +264,12 @@ lm1 <- postResample(lmFit1Pred, testPreprocessed$shares)
 
 ### Boosted Model
 
+Boosted tree models are a type of tree-based model. We'll focus on specifically regression trees (as opposed to classification trees) here. For a regression tree, we predict a continuous response, we split up the predictor space into regions based on the mean of observations. These splits form the "branches" of the tree. The splits are chosen by fitting using recursive binary splitting, which is a "greedy" algorithm". For each value of a predictor, we find the SSE (residual sum of squares, or error sum of squares) and minimize it. This should allow us to obtain a split, and once that split is chosen, we do more iterations to create a second split, splits for that second split, and so on. This process grows a very large tree with many nodes, which we then "prune" using cost-complexity pruning. The pruning process prevents over-fitting of data. It does increase bias, but it decreases variance which should improve prediction.
+
+Boosted trees are grown sequentially and reach subsequent tree is grown on a modified version of the original data. Sequential learning deals with errors created by previous trees; in boosting, new trees are formed by considering the errors of trees in previous rounds. Therefore, new trees are created one after another. Each tree is dependent on the previous tree. Predictions are updated as the trees are grown. 
+
+How is this process implemented? Specifically, in the case of regression trees, the predictions are taken in initially as 0. Then, the residuals are found (observed/predicted difference). A tree is then fit with d splits, and d+1 terminal nodes, with the residuals treated as the response here. The predictions are then updated with a recursive definition: the updated prediction is equal to the old/initial prediction, plus the shrinkage parameter lambda (shrinkage parameter slows the fitting process down) multiplying the the predictions obtained from the fitting. We then continue to update residuals for new predictions for B times. Below, we used cross-validation to choose the parameters n, B lambda, as well as N (the number of trees).
+
 ```{r boosted1 ,warning=FALSE,echo=FALSE,cache=FALSE}
 control <- trainControl(method = "cv",number = 5)
 tuningGrid <- expand.grid(n.trees = c(25, 50, 100, 150, 200),
